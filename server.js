@@ -1,7 +1,9 @@
 const express = require("express");
 const mysql = require("mysql");
+const bodyParser = require("body-parser");
 
 const app = express();
+app.use(bodyParser.text());
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -10,31 +12,30 @@ const connection = mysql.createConnection({
   database: "first_db"
 });
 
-// connection.query("SELECT title FROM books", (error, result) => {
-//   if (error) {
-//     console.error(error);
-//     return;
-//   }
-//   console.log(result);
-// });
-
 const PORT = process.env.PORT || 8080;
 
 const getTitle = function(req, res) {
-  connection.query("SELECT title FROM books", (err, result) => {
+  connection.query("SELECT title FROM books;", (err, result) => {
     if (err) {
       console.error(err);
       return;
     }
-    res.send(result);
+    res.send(JSON.stringify(result));
   });
 };
 
-app.get("/home", function(req, res) {
-  res.json({ data: "hello world" });
-});
+const handleAddTitle = function(req, res) {
+  connection.query(
+    `INSERT INTO books (title) VALUES ("${req.body}");`,
+    (err, result) => {
+      if (err) console.error("error is *****\n", err);
+    }
+  );
+  console.log(req.body, typeof req.body);
+};
 
 app.get("/getTitles", getTitle);
+app.post("/addTitle", handleAddTitle);
 
 /**
  * serves builld from submodule ..
